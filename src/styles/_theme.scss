@@ -1,0 +1,106 @@
+:root {
+  --bg: #fff7ed;
+  --surface: rgba(255, 255, 255, 0.86);
+  --surface-strong: rgba(255, 255, 255, 0.96);
+  --text: #2b1d12;
+  --muted: #8a6f5a;
+  --primary: #f97316;
+  --primary-contrast: #ffffff;
+  --primary-soft: rgba(249, 115, 22, 0.14);
+  --accent: #14b8a6;
+  --green: #22c55e;
+  --green-soft: rgba(34, 197, 94, 0.2);
+  --red: #ef4444;
+  --red-soft: rgba(239, 68, 68, 0.18);
+  --gold: #f59e0b;
+  --radius: 24px;
+  --shadow: 0 18px 40px rgba(97, 54, 20, 0.16);
+  --shadow-soft: 0 8px 18px rgba(97, 54, 20, 0.12);
+  --border: rgba(43, 29, 18, 0.12);
+  --border-strong: rgba(43, 29, 18, 0.22);
+  --chip-bg: rgba(43, 29, 18, 0.06);
+  --focus-ring: rgba(249, 115, 22, 0.25);
+
+  --sky-top: #bfe9ff;
+  --sky-bottom: #ffe9c7;
+  --sun: #ffe08a;
+  --sun-glow: rgba(255, 224, 138, 0.65);
+  --cloud: #ffffff;
+  --cloud-shadow: rgba(120, 170, 220, 0.18);
+  --hill-far: #b9e4c5;
+  --hill-near: #8fd39f;
+  --ground-top: #7cc98a;
+  --ground: #5aa96b;
+  --ground-dark: #3f8a52;
+  --ground-line: rgba(255, 255, 255, 0.35);
+  --tree: #4f9d5d;
+  --tree-dark: #3c7f49;
+  --rock: #9aa6b2;
+  --rock-dark: #6f7c89;
+  --rock-light: #c3ccd4;
+  --branch: #7a4a2b;
+  --branch-dark: #5b3520;
+  --leaf: #4fa75f;
+  --leaf-dark: #377d44;
+  --berry: #e11d48;
+  --berry-dark: #9f1239;
+  --berry-shine: #ffb3c1;
+  --hud-bg: rgba(255, 255, 255, 0.82);
+  --overlay-bg: rgba(20, 12, 6, 0.42);
+
+  color-scheme: light;
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial,
+    sans-serif;
+}
+
+:root[data-theme='dark'] {
+  --bg: #0e1526;
+  --surface: rgba(22, 32, 54, 0.86);
+  --surface-strong: rgba(28, 40, 66, 0.96);
+  --text: #f4ead9;
+  --muted: #a99b86;
+  --primary: #fb923c;
+  --primary-contrast: #1a1206;
+  --primary-soft: rgba(251, 146, 60, 0.18);
+  --accent: #2dd4bf;
+  --green: #34d399;
+  --green-soft: rgba(52, 211, 153, 0.22);
+  --red: #fb7185;
+  --red-soft: rgba(251, 113, 133, 0.22);
+  --gold: #fbbf24;
+  --shadow: 0 18px 40px rgba(0, 0, 0, 0.5);
+  --shadow-soft: 0 8px 18px rgba(0, 0, 0, 0.4);
+  --border: rgba(244, 234, 217, 0.16);
+  --border-strong: rgba(244, 234, 217, 0.28);
+  --chip-bg: rgba(244, 234, 217, 0.08);
+  --focus-ring: rgba(251, 146, 60, 0.35);
+
+  --sky-top: #0b1e3a;
+  --sky-bottom: #2a2350;
+  --sun: #ffe6a7;
+  --sun-glow: rgba(255, 230, 167, 0.35);
+  --cloud: rgba(198, 214, 255, 0.22);
+  --cloud-shadow: rgba(0, 0, 0, 0.2);
+  --hill-far: #1f3b52;
+  --hill-near: #24495c;
+  --ground-top: #2f6b4f;
+  --ground: #235440;
+  --ground-dark: #173d2f;
+  --ground-line: rgba(255, 255, 255, 0.14);
+  --tree: #2b6047;
+  --tree-dark: #1e4a36;
+  --rock: #4b5b6b;
+  --rock-dark: #33414e;
+  --rock-light: #67788a;
+  --branch: #4a2f1d;
+  --branch-dark: #33200f;
+  --leaf: #2f7a48;
+  --leaf-dark: #215a35;
+  --berry: #fb7185;
+  --berry-dark: #b91c3c;
+  --berry-shine: #ffc7d1;
+  --hud-bg: rgba(18, 26, 44, 0.82);
+  --overlay-bg: rgba(4, 8, 16, 0.62);
+
+  color-scheme: dark;
+}

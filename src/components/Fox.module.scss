@@ -1,0 +1,188 @@
+.fox {
+  width: 100%;
+  height: 100%;
+  transform-origin: bottom center;
+}
+
+.fox:not(.running) {
+  animation: idleBob 2.4s ease-in-out infinite;
+}
+
+.fox:not(.running) .tail {
+  animation: wag 1.8s ease-in-out infinite;
+}
+
+.svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.body,
+.tailFill {
+  fill: var(--fox-body, #f97316);
+}
+
+.belly,
+.tailTip,
+.muzzle {
+  fill: var(--fox-belly, #fff3e2);
+}
+
+.face {
+  fill: var(--fox-face, #fb923c);
+}
+
+.ear,
+.leg {
+  fill: var(--fox-ear, #ea580c);
+}
+
+.earInner {
+  fill: var(--fox-ear-inner, #ffd7c2);
+}
+
+.nose {
+  fill: var(--fox-nose, #3b2417);
+}
+
+.eye {
+  fill: var(--fox-eye, #2b1d12);
+}
+
+.eyeShine {
+  fill: #ffffff;
+}
+
+.skinEmber {
+  --fox-body: #ef4444;
+  --fox-belly: #ffe4d6;
+  --fox-face: #f87171;
+  --fox-ear: #b91c1c;
+  --fox-ear-inner: #fecaca;
+  --fox-nose: #3b0a0a;
+  --fox-eye: #2b0a0a;
+}
+
+.skinFrost {
+  --fox-body: #7dd3fc;
+  --fox-belly: #f0f9ff;
+  --fox-face: #bae6fd;
+  --fox-ear: #0ea5e9;
+  --fox-ear-inner: #e0f2fe;
+  --fox-nose: #0c2a3d;
+  --fox-eye: #0c2a3d;
+}
+
+.skinGold {
+  --fox-body: #fbbf24;
+  --fox-belly: #fffbeb;
+  --fox-face: #fcd34d;
+  --fox-ear: #d97706;
+  --fox-ear-inner: #fef3c7;
+  --fox-nose: #3b2417;
+  --fox-eye: #3b2417;
+}
+
+.leg {
+  transform-box: fill-box;
+  transform-origin: 50% 0%;
+}
+
+.tail {
+  transform-box: fill-box;
+  transform-origin: 92% 78%;
+}
+
+.ducking .svg {
+  transform: scaleX(1.05);
+}
+
+.running {
+  animation: bob 0.34s ease-in-out infinite;
+}
+
+.running .leg {
+  animation: swing 0.32s ease-in-out infinite;
+}
+
+.running .legs rect:nth-child(2) {
+  animation-delay: -0.16s;
+}
+
+.running .tail {
+  animation: wag 0.6s ease-in-out infinite;
+}
+
+.hurt .svg {
+  animation: hurtFlash 0.18s steps(2, end) 4;
+}
+
+.flipping .svg {
+  transform-origin: 50% 60%;
+  animation: flip 0.56s cubic-bezier(0.3, 0.7, 0.35, 1) both;
+}
+
+.frenzy .svg {
+  filter: drop-shadow(0 0 8px rgba(251, 191, 36, 0.85));
+}
+
+.frenzy .tail {
+  animation-duration: 0.3s;
+}
+
+@keyframes bob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-4%);
+  }
+}
+
+@keyframes idleBob {
+  0%,
+  100% {
+    transform: translateY(0) scaleY(1);
+  }
+  50% {
+    transform: translateY(-1.5%) scaleY(1.015);
+  }
+}
+
+@keyframes swing {
+  0%,
+  100% {
+    transform: rotate(16deg);
+  }
+  50% {
+    transform: rotate(-16deg);
+  }
+}
+
+@keyframes wag {
+  0%,
+  100% {
+    transform: rotate(-5deg);
+  }
+  50% {
+    transform: rotate(7deg);
+  }
+}
+
+@keyframes hurtFlash {
+  50% {
+    opacity: 0.3;
+  }
+}
+
+@keyframes flip {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
