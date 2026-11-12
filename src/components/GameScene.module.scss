@@ -13,6 +13,11 @@
   animation: screenShake 0.32s ease-in-out;
 }
 
+.paused,
+.paused * {
+  animation-play-state: paused !important;
+}
+
 .sky {
   position: absolute;
   inset: 0;

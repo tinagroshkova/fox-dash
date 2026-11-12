@@ -95,6 +95,7 @@ interface GameSceneProps {
   damaged: boolean
   skin: Skin
   banner: SceneBanner | null
+  paused: boolean
 }
 
 export const GameScene = ({
@@ -105,6 +106,7 @@ export const GameScene = ({
   damaged,
   skin,
   banner,
+  paused,
 }: GameSceneProps) => {
   const running = world.phase === 'playing' && world.fox.onGround
   const hurt =
@@ -126,6 +128,7 @@ export const GameScene = ({
     biome === 'snow' ? styles.biomeSnow : '',
     shaking ? styles.shaking : '',
     banner?.tone === 'frenzy' ? styles.pulse : '',
+    paused ? styles.paused : '',
   ]
     .filter(Boolean)
     .join(' ')

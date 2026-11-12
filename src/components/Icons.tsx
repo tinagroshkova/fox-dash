@@ -95,6 +95,19 @@ export const ClockIcon = (props: IconProps) => (
   </svg>
 )
 
+export const PauseIcon = (props: IconProps) => (
+  <svg viewBox="0 0 24 24" aria-hidden="true" {...props}>
+    <rect x="6" y="4.5" width="4" height="15" rx="1.4" fill="currentColor" />
+    <rect x="14" y="4.5" width="4" height="15" rx="1.4" fill="currentColor" />
+  </svg>
+)
+
+export const PlayIcon = (props: IconProps) => (
+  <svg viewBox="0 0 24 24" aria-hidden="true" {...props}>
+    <path d="M8 4.8v14.4L19.2 12z" fill="currentColor" />
+  </svg>
+)
+
 export const FoxLogo = (props: IconProps) => (
   <svg viewBox="0 0 32 32" aria-hidden="true" {...props}>
     <path

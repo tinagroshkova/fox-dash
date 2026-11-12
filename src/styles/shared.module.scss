@@ -22,6 +22,17 @@
   transform: translateY(-1px);
 }
 
+.iconButton:disabled {
+  opacity: 0.45;
+  cursor: default;
+  transform: none;
+}
+
+.iconButton:disabled:hover {
+  background: var(--surface);
+  border-color: var(--border);
+}
+
 .playButton {
   display: inline-flex;
   align-items: center;
