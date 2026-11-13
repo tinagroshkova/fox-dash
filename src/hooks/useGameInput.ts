@@ -9,6 +9,7 @@ import type { World } from '../game'
 interface GameInputOptions {
   worldRef: RefObject<World>
   paused: boolean
+  disabled?: boolean
   jumpQueued: RefObject<boolean>
   jumpHeld: RefObject<boolean>
   duckHeld: RefObject<boolean>
@@ -29,6 +30,7 @@ const isPauseKey = (key: string): boolean =>
 export const useGameInput = ({
   worldRef,
   paused,
+  disabled = false,
   jumpQueued,
   jumpHeld,
   duckHeld,
@@ -38,6 +40,9 @@ export const useGameInput = ({
 }: GameInputOptions) => {
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
+      if (disabled) {
+        return
+      }
       const key = event.key
       const playing = worldRef.current.phase === 'playing'
 
@@ -85,6 +90,7 @@ export const useGameInput = ({
   }, [
     worldRef,
     paused,
+    disabled,
     jumpQueued,
     jumpHeld,
     duckHeld,
@@ -120,33 +126,39 @@ export const useGameInput = ({
   }, [duckHeld, jumpHeld])
 
   const handleScenePointer = useCallback(() => {
+    if (disabled) {
+      return
+    }
     if (worldRef.current.phase === 'playing' && !paused) {
       jumpQueued.current = true
       jumpHeld.current = true
     }
-  }, [worldRef, paused, jumpQueued, jumpHeld])
+  }, [worldRef, paused, disabled, jumpQueued, jumpHeld])
 
   const handleJump = useCallback(
     (event: ReactPointerEvent<HTMLButtonElement>) => {
       event.preventDefault()
+      if (disabled) {
+        return
+      }
       if (worldRef.current.phase === 'playing' && !paused) {
         jumpQueued.current = true
         jumpHeld.current = true
       }
     },
-    [worldRef, paused, jumpQueued, jumpHeld],
+    [worldRef, paused, disabled, jumpQueued, jumpHeld],
   )
 
   const handleDuckStart = useCallback(
     (event: ReactPointerEvent<HTMLButtonElement>) => {
       event.preventDefault()
-      if (paused) {
+      if (disabled || paused) {
         return
       }
       event.currentTarget.setPointerCapture?.(event.pointerId)
       duckHeld.current = true
     },
-    [paused, duckHeld],
+    [paused, disabled, duckHeld],
   )
 
   const handleDuckEnd = useCallback(() => {

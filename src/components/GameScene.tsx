@@ -1,9 +1,10 @@
-import type { CSSProperties } from 'react'
+import { memo, type CSSProperties } from 'react'
 import {
   BERRY_RADIUS,
   FOX_WIDTH,
   FOX_X,
   GROUND_HEIGHT,
+  HAZARD_RADIUS,
   INVINCIBLE_TIME,
   LOGICAL_HEIGHT,
   LOGICAL_WIDTH,
@@ -18,7 +19,14 @@ import {
 } from '../game'
 import type { Particle, VisualEffect } from '../effects'
 import type { Skin } from '../skins'
-import { ClockIcon, HeartIcon, MagnetIcon, ShieldIcon } from './Icons'
+import {
+  AcornIcon,
+  BeeIcon,
+  ClockIcon,
+  HeartIcon,
+  MagnetIcon,
+  ShieldIcon,
+} from './Icons'
 import { Fox } from './Fox'
 import styles from './GameScene.module.scss'
 
@@ -81,6 +89,144 @@ const effectClassFor = (kind: VisualEffect['kind']): string => {
   }
 }
 
+const SceneBackground = memo(() => (
+  <>
+    <div className={styles.sky} />
+    <div className={styles.sun} />
+
+    <div className={styles.cloudLayer} aria-hidden="true">
+      <div className={`${styles.cloud} ${styles.cloudA}`} />
+      <div className={`${styles.cloud} ${styles.cloudB}`} />
+      <div className={`${styles.cloud} ${styles.cloudC}`} />
+    </div>
+
+    <div className={styles.hillsFar} />
+    <div className={styles.hillsNear} />
+    <div className={styles.ground} />
+  </>
+))
+
+SceneBackground.displayName = 'SceneBackground'
+
+interface WeatherLayerProps {
+  biome: Biome
+}
+
+const WeatherLayer = memo(({ biome }: WeatherLayerProps) => (
+  <div className={styles.weather} aria-hidden="true">
+    {biome === 'forest' &&
+      LEAVES.map((leaf, index) => (
+        <span
+          key={index}
+          className={styles.leaf}
+          style={
+            {
+              left: `${leaf.left}%`,
+              width: `${leaf.size}px`,
+              height: `${leaf.size * 0.7}px`,
+              animationDelay: `${leaf.delay}s`,
+              animationDuration: `${leaf.duration}s`,
+            } as CSSProperties
+          }
+        />
+      ))}
+    {biome === 'night' &&
+      FIREFLIES.map((fly, index) => (
+        <span
+          key={index}
+          className={styles.firefly}
+          style={
+            {
+              left: `${fly.left}%`,
+              top: `${fly.top}%`,
+              animationDelay: `${fly.delay}s`,
+              animationDuration: `${fly.duration}s`,
+            } as CSSProperties
+          }
+        />
+      ))}
+    {biome === 'snow' &&
+      SNOW.map((flake, index) => (
+        <span
+          key={index}
+          className={styles.snowflake}
+          style={
+            {
+              left: `${flake.left}%`,
+              width: `${flake.size}px`,
+              height: `${flake.size}px`,
+              animationDelay: `${flake.delay}s`,
+              animationDuration: `${flake.duration}s`,
+            } as CSSProperties
+          }
+        />
+      ))}
+  </div>
+))
+
+WeatherLayer.displayName = 'WeatherLayer'
+
+interface EffectLayerProps {
+  effects: VisualEffect[]
+}
+
+const EffectLayer = memo(({ effects }: EffectLayerProps) => (
+  <div className={styles.effectLayer} aria-hidden="true">
+    {effects.map((effect) => (
+      <div
+        key={effect.id}
+        className={`${styles.effectAnchor} ${effectClassFor(effect.kind)}`}
+        style={{
+          left: pctX(effect.x),
+          bottom: pctY(GROUND_HEIGHT + effect.y),
+        }}
+      >
+        {effect.kind === 'score' && (
+          <div className={styles.scorePopup}>
+            <span className={styles.scoreValue}>+{effect.value}</span>
+            {effect.multiplier > 1 && (
+              <span className={styles.scoreMultiplier}>
+                x{effect.multiplier}
+              </span>
+            )}
+          </div>
+        )}
+        {effect.kind === 'near' && (
+          <div className={styles.nearPopup}>
+            <span>Close!</span>
+            <span className={styles.nearValue}>+{effect.value}</span>
+          </div>
+        )}
+        {effect.kind === 'pickup' && (
+          <div className={styles.pickupPopup}>{effect.label}</div>
+        )}
+        {effect.kind === 'life' && (
+          <div className={styles.lifeLost}>
+            <HeartIcon className={styles.lifeHeart} />
+            <span className={styles.lifeValue}>-1</span>
+          </div>
+        )}
+        {effect.particles.map((particle, index) => (
+          <span
+            key={index}
+            className={`${styles.particle} ${toneClass[particle.tone]}`}
+            style={
+              {
+                '--dx': `${particle.dx}px`,
+                '--dy': `${particle.dy}px`,
+                '--size': `${particle.size}px`,
+                '--delay': `${particle.delay}s`,
+              } as CSSProperties
+            }
+          />
+        ))}
+      </div>
+    ))}
+  </div>
+))
+
+EffectLayer.displayName = 'EffectLayer'
+
 export interface SceneBanner {
   id: number
   text: string
@@ -135,68 +281,8 @@ export const GameScene = ({
 
   return (
     <div className={sceneClass} style={sceneStyle}>
-      <div className={styles.sky} />
-      <div className={styles.sun} />
-
-      <div className={styles.cloudLayer} aria-hidden="true">
-        <div className={`${styles.cloud} ${styles.cloudA}`} />
-        <div className={`${styles.cloud} ${styles.cloudB}`} />
-        <div className={`${styles.cloud} ${styles.cloudC}`} />
-      </div>
-
-      <div className={styles.hillsFar} />
-      <div className={styles.hillsNear} />
-      <div className={styles.ground} />
-
-      <div className={styles.weather} aria-hidden="true">
-        {biome === 'forest' &&
-          LEAVES.map((leaf, index) => (
-            <span
-              key={index}
-              className={styles.leaf}
-              style={
-                {
-                  left: `${leaf.left}%`,
-                  width: `${leaf.size}px`,
-                  height: `${leaf.size * 0.7}px`,
-                  animationDelay: `${leaf.delay}s`,
-                  animationDuration: `${leaf.duration}s`,
-                } as CSSProperties
-              }
-            />
-          ))}
-        {biome === 'night' &&
-          FIREFLIES.map((fly, index) => (
-            <span
-              key={index}
-              className={styles.firefly}
-              style={
-                {
-                  left: `${fly.left}%`,
-                  top: `${fly.top}%`,
-                  animationDelay: `${fly.delay}s`,
-                  animationDuration: `${fly.duration}s`,
-                } as CSSProperties
-              }
-            />
-          ))}
-        {biome === 'snow' &&
-          SNOW.map((flake, index) => (
-            <span
-              key={index}
-              className={styles.snowflake}
-              style={
-                {
-                  left: `${flake.left}%`,
-                  width: `${flake.size}px`,
-                  height: `${flake.size}px`,
-                  animationDelay: `${flake.delay}s`,
-                  animationDuration: `${flake.duration}s`,
-                } as CSSProperties
-              }
-            />
-          ))}
-      </div>
+      <SceneBackground />
+      <WeatherLayer biome={biome} />
 
       <div
         className={styles.speedLines}
@@ -208,6 +294,27 @@ export const GameScene = ({
       {world.slowTimer > 0 && (
         <div className={styles.slowOverlay} aria-hidden="true" />
       )}
+
+      {world.hazards.map((hazard) => (
+        <div
+          key={hazard.id}
+          className={`${styles.hazard} ${
+            hazard.kind === 'acorn' ? styles.acorn : styles.bee
+          }`}
+          style={{
+            left: pctX(hazard.x - HAZARD_RADIUS),
+            bottom: pctY(GROUND_HEIGHT + hazard.y - HAZARD_RADIUS),
+            width: pctX(HAZARD_RADIUS * 2),
+            height: pctY(HAZARD_RADIUS * 2),
+          }}
+        >
+          {hazard.kind === 'acorn' ? (
+            <AcornIcon className={styles.hazardIcon} />
+          ) : (
+            <BeeIcon className={styles.hazardIcon} />
+          )}
+        </div>
+      ))}
 
       {world.pickups.map((pickup) => (
         <div
@@ -363,58 +470,7 @@ export const GameScene = ({
         </div>
       )}
 
-      <div className={styles.effectLayer} aria-hidden="true">
-        {effects.map((effect) => (
-          <div
-            key={effect.id}
-            className={`${styles.effectAnchor} ${effectClassFor(effect.kind)}`}
-            style={{
-              left: pctX(effect.x),
-              bottom: pctY(GROUND_HEIGHT + effect.y),
-            }}
-          >
-            {effect.kind === 'score' && (
-              <div className={styles.scorePopup}>
-                <span className={styles.scoreValue}>+{effect.value}</span>
-                {effect.multiplier > 1 && (
-                  <span className={styles.scoreMultiplier}>
-                    x{effect.multiplier}
-                  </span>
-                )}
-              </div>
-            )}
-            {effect.kind === 'near' && (
-              <div className={styles.nearPopup}>
-                <span>Close!</span>
-                <span className={styles.nearValue}>+{effect.value}</span>
-              </div>
-            )}
-            {effect.kind === 'pickup' && (
-              <div className={styles.pickupPopup}>{effect.label}</div>
-            )}
-            {effect.kind === 'life' && (
-              <div className={styles.lifeLost}>
-                <HeartIcon className={styles.lifeHeart} />
-                <span className={styles.lifeValue}>-1</span>
-              </div>
-            )}
-            {effect.particles.map((particle, index) => (
-              <span
-                key={index}
-                className={`${styles.particle} ${toneClass[particle.tone]}`}
-                style={
-                  {
-                    '--dx': `${particle.dx}px`,
-                    '--dy': `${particle.dy}px`,
-                    '--size': `${particle.size}px`,
-                    '--delay': `${particle.delay}s`,
-                  } as CSSProperties
-                }
-              />
-            ))}
-          </div>
-        ))}
-      </div>
+      <EffectLayer effects={effects} />
     </div>
   )
 }

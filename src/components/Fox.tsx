@@ -1,3 +1,4 @@
+import { memo } from 'react'
 import type { Skin } from '../skins'
 import styles from './Fox.module.scss'
 
@@ -17,7 +18,7 @@ interface FoxProps {
   skin: Skin
 }
 
-export const Fox = ({
+export const Fox = memo(({
   ducking,
   running,
   hurt,
@@ -82,4 +83,6 @@ export const Fox = ({
       </svg>
     </div>
   )
-}
+})
+
+Fox.displayName = 'Fox'

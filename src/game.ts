@@ -55,6 +55,11 @@ export const SLOW_FACTOR = 0.62
 export const NEAR_MISS_GAP = 28
 export const NEAR_MISS_POINTS = 8
 
+export const HAZARD_RADIUS = 15
+export const BEE_SPEED = 90
+export const REVIVE_COST = 25
+export const MAX_REVIVES = 1
+
 export const BIOME_LENGTH = 1400
 
 export type Biome = 'forest' | 'night' | 'snow'
@@ -92,6 +97,17 @@ export interface Pickup {
   kind: PickupKind
   x: number
   y: number
+}
+
+export type HazardKind = 'acorn' | 'bee'
+
+export interface Hazard {
+  id: number
+  kind: HazardKind
+  x: number
+  y: number
+  vx: number
+  vy: number
 }
 
 export interface Obstacle {
@@ -153,11 +169,13 @@ export interface World {
   obstacles: Obstacle[]
   berries: Berry[]
   pickups: Pickup[]
+  hazards: Hazard[]
   hearts: number
   shields: number
   score: number
   berriesCollected: number
   nearMisses: number
+  powerupsCollected: number
   combo: number
   comboTimer: number
   bestCombo: number
@@ -168,6 +186,8 @@ export interface World {
   nextObstacleAt: number
   nextBerryAt: number
   nextPickupAt: number
+  nextHazardAt: number
+  revives: number
   nextId: number
   rng: () => number
   events: GameEvent[]
@@ -205,11 +225,13 @@ export const createWorld = (
   obstacles: [],
   berries: [],
   pickups: [],
+  hazards: [],
   hearts: MAX_HEARTS,
   shields: 0,
   score: 0,
   berriesCollected: 0,
   nearMisses: 0,
+  powerupsCollected: 0,
   combo: 0,
   comboTimer: 0,
   bestCombo: 0,
@@ -220,6 +242,8 @@ export const createWorld = (
   nextObstacleAt: 900,
   nextBerryAt: 520,
   nextPickupAt: 1200,
+  nextHazardAt: 2000,
+  revives: 0,
   nextId: 1,
   rng,
   events: [],
@@ -229,6 +253,47 @@ export const startRun = (world: World): World => ({
   ...createWorld(world.best, world.rng),
   phase: 'playing',
 })
+
+export const reviveRun = (world: World): World => {
+  if (
+    world.phase !== 'over' ||
+    world.revives >= MAX_REVIVES ||
+    world.berriesCollected < REVIVE_COST
+  ) {
+    return world
+  }
+
+  return {
+    ...world,
+    phase: 'playing',
+    fox: {
+      ...world.fox,
+      y: 0,
+      vy: 0,
+      ducking: false,
+      onGround: true,
+      jumps: 0,
+      coyote: COYOTE_TIME,
+      jumpBuffer: 0,
+    },
+    obstacles: [],
+    berries: [],
+    pickups: [],
+    hazards: [],
+    hearts: 1,
+    shields: 0,
+    invincible: INVINCIBLE_TIME * 1.5,
+    combo: 0,
+    comboTimer: 0,
+    berriesCollected: world.berriesCollected - REVIVE_COST,
+    revives: world.revives + 1,
+    nextObstacleAt: world.distance + 900,
+    nextBerryAt: world.distance + 520,
+    nextPickupAt: world.distance + 1200,
+    nextHazardAt: world.distance + 1400,
+    events: [],
+  }
+}
 
 export const foxHeight = (fox: Fox): number =>
   fox.ducking ? FOX_DUCK_HEIGHT : FOX_STAND_HEIGHT
@@ -262,6 +327,13 @@ export const pickupBox = (pickup: Pickup): Box => ({
   right: pickup.x + PICKUP_RADIUS,
   bottom: pickup.y - PICKUP_RADIUS,
   top: pickup.y + PICKUP_RADIUS,
+})
+
+export const hazardBox = (hazard: Hazard): Box => ({
+  left: hazard.x - HAZARD_RADIUS,
+  right: hazard.x + HAZARD_RADIUS,
+  bottom: hazard.y - HAZARD_RADIUS,
+  top: hazard.y + HAZARD_RADIUS,
 })
 
 export const boxesOverlap = (a: Box, b: Box): boolean =>
@@ -309,6 +381,7 @@ export const step = (prev: World, dt: number, input: InputState): World => {
   let invincible = Math.max(0, prev.invincible - delta)
   let berriesCollected = prev.berriesCollected
   let nearMisses = prev.nearMisses
+  let powerupsCollected = prev.powerupsCollected
   let combo = prev.combo
   let comboTimer = Math.max(0, prev.comboTimer - delta)
   if (comboTimer <= 0) {
@@ -373,6 +446,20 @@ export const step = (prev: World, dt: number, input: InputState): World => {
 
   const fbox = foxBox(fox)
 
+  const damageFox = (): void => {
+    if (shields > 0) {
+      shields -= 1
+      invincible = INVINCIBLE_TIME * 0.6
+      events.push({ type: 'shield' })
+    } else {
+      hearts -= 1
+      invincible = INVINCIBLE_TIME
+      combo = 0
+      comboTimer = 0
+      events.push({ type: 'hit' })
+    }
+  }
+
   let obstacles = prev.obstacles
     .map((obstacle) => ({ ...obstacle, x: obstacle.x - moveSpeed * delta }))
     .filter((obstacle) => obstacle.x + obstacle.width > -80)
@@ -385,17 +472,7 @@ export const step = (prev: World, dt: number, input: InputState): World => {
   }
 
   if (hit.size > 0 && invincible <= 0) {
-    if (shields > 0) {
-      shields -= 1
-      invincible = INVINCIBLE_TIME * 0.6
-      events.push({ type: 'shield' })
-    } else {
-      hearts -= 1
-      invincible = INVINCIBLE_TIME
-      combo = 0
-      comboTimer = 0
-      events.push({ type: 'hit' })
-    }
+    damageFox()
     obstacles = obstacles.filter((obstacle) => !hit.has(obstacle.id))
   }
 
@@ -426,6 +503,22 @@ export const step = (prev: World, dt: number, input: InputState): World => {
         y: fox.y + foxHeight(fox) / 2,
       })
     }
+  }
+
+  let hazards = prev.hazards
+    .map((hazard) => ({
+      ...hazard,
+      x: hazard.x + (hazard.vx - moveSpeed) * delta,
+      y: hazard.y + hazard.vy * delta,
+    }))
+    .filter((hazard) => hazard.x > -80 && hazard.y > -40)
+
+  const hazardHit = hazards.find((hazard) =>
+    boxesOverlap(fbox, hazardBox(hazard)),
+  )
+  if (hazardHit && invincible <= 0) {
+    damageFox()
+    hazards = hazards.filter((hazard) => hazard.id !== hazardHit.id)
   }
 
   let berries = prev.berries
@@ -490,6 +583,7 @@ export const step = (prev: World, dt: number, input: InputState): World => {
   if (collected.size > 0) {
     const firstPickup = pickups.find((pickup) => collected.has(pickup.id))
     pickups = pickups.filter((pickup) => !collected.has(pickup.id))
+    powerupsCollected += collected.size
     if (firstPickup) {
       if (firstPickup.kind === 'shield') {
         shields = Math.min(MAX_SHIELDS, shields + 1)
@@ -571,6 +665,33 @@ export const step = (prev: World, dt: number, input: InputState): World => {
     nextPickupAt += Math.max(1200, speed * (2.4 + rng() * 1.2))
   }
 
+  let nextHazardAt = prev.nextHazardAt
+  guard = 0
+  while (distance >= nextHazardAt && guard < 3) {
+    guard += 1
+    const kind: HazardKind = rng() < 0.55 ? 'acorn' : 'bee'
+    const x = LOGICAL_WIDTH + 80 + rng() * 100
+    const y = kind === 'acorn' ? SKY_HEIGHT + 20 + rng() * 60 : 55 + rng() * 50
+    const targetY = 30 + rng() * 30
+    const travel = Math.max(
+      0.8,
+      (x - (FOX_X + FOX_WIDTH / 2)) / Math.max(1, speed),
+    )
+    hazards = [
+      ...hazards,
+      {
+        id: nextId,
+        kind,
+        x,
+        y,
+        vx: kind === 'bee' ? -(BEE_SPEED + rng() * 60) : 0,
+        vy: kind === 'acorn' ? -(y - targetY) / travel : 0,
+      },
+    ]
+    nextId += 1
+    nextHazardAt += Math.max(1100, speed * (2.8 + rng() * 1.6))
+  }
+
   let phase: Phase = prev.phase
   let best = prev.best
 
@@ -591,11 +712,13 @@ export const step = (prev: World, dt: number, input: InputState): World => {
     obstacles,
     berries,
     pickups,
+    hazards,
     hearts,
     shields,
     score,
     berriesCollected,
     nearMisses,
+    powerupsCollected,
     combo,
     comboTimer,
     bestCombo,
@@ -606,6 +729,8 @@ export const step = (prev: World, dt: number, input: InputState): World => {
     nextObstacleAt,
     nextBerryAt,
     nextPickupAt,
+    nextHazardAt,
+    revives: prev.revives,
     nextId,
     events,
   }

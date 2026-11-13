@@ -134,6 +134,12 @@ export const playCombo = (multiplier: number): void => {
   tone({ frequency: base * 1.5, duration: 0.14, type: 'triangle', gain: 0.04, delay: 0.06 })
 }
 
+export const playRevive = (): void => {
+  tone({ frequency: 392, endFrequency: 784, duration: 0.28, type: 'triangle', gain: 0.07 })
+  tone({ frequency: 784, duration: 0.2, type: 'sine', gain: 0.05, delay: 0.16 })
+  tone({ frequency: 1176, duration: 0.24, type: 'sine', gain: 0.04, delay: 0.3 })
+}
+
 const MUSIC_NOTES = [261.63, 329.63, 392, 523.25, 440, 392, 329.63, 293.66]
 const MUSIC_BASS = [130.81, 110, 98, 130.81]
 

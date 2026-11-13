@@ -1,12 +1,17 @@
 import { formattedScore } from '../game'
-import { nextSkin, skinName, type Skin } from '../skins'
+import { skinName, type Skin } from '../skins'
+import type { ChallengeDef } from '../challenges'
 import shared from '../styles/shared.module.scss'
+import { DailyChallenges } from './DailyChallenges'
 import styles from './StartScreen.module.scss'
 
 interface StartScreenProps {
   best: number
   skin: Skin
   totalBerries: number
+  challenges: ChallengeDef[]
+  completedChallenges: string[]
+  onOpenShop: () => void
   onPlay: () => void
 }
 
@@ -14,10 +19,11 @@ export const StartScreen = ({
   best,
   skin,
   totalBerries,
+  challenges,
+  completedChallenges,
+  onOpenShop,
   onPlay,
 }: StartScreenProps) => {
-  const upcoming = nextSkin(totalBerries)
-
   return (
     <div className={styles.overlay}>
       <div className={styles.panel}>
@@ -48,12 +54,23 @@ export const StartScreen = ({
           </div>
         </div>
 
-        <p className={styles.skin}>
-          Fox: <strong>{skinName(skin)}</strong>
-          {upcoming
-            ? ` · ${upcoming.cost - totalBerries} more berries to unlock ${upcoming.name}`
-            : ' · all skins unlocked'}
-        </p>
+        <DailyChallenges
+          challenges={challenges}
+          completed={completedChallenges}
+        />
+
+        <div className={styles.wardrobe}>
+          <p className={styles.skin}>
+            Fox: <strong>{skinName(skin)}</strong> · {totalBerries} berries
+          </p>
+          <button
+            type="button"
+            className={shared.secondaryButton}
+            onClick={onOpenShop}
+          >
+            Wardrobe
+          </button>
+        </div>
 
         <button type="button" className={shared.playButton} onClick={onPlay}>
           Play

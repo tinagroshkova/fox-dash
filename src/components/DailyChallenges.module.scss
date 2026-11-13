@@ -1,0 +1,144 @@
+.card {
+  width: 100%;
+  padding: clamp(10px, 1.8vw, 14px);
+  border-radius: 18px;
+  background: var(--chip-bg);
+  border: 1px solid var(--border);
+  text-align: left;
+}
+
+.header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.title {
+  margin: 0;
+  font-size: clamp(0.7rem, 1.4vw, 0.8rem);
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--primary);
+}
+
+.subtitle {
+  margin: 2px 0 0;
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.count {
+  flex: none;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: var(--surface-strong);
+  border: 1px solid var(--border);
+  font-size: 0.72rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: var(--muted);
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.item {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 7px 9px;
+  border-radius: 12px;
+  background: var(--surface-strong);
+  border: 1px solid var(--border);
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.done {
+  border-color: var(--green);
+  background: var(--green-soft);
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.label {
+  font-size: clamp(0.74rem, 1.5vw, 0.84rem);
+  font-weight: 700;
+  color: var(--text);
+}
+
+.done .label {
+  color: var(--green);
+}
+
+.reward {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  flex: none;
+  font-size: 0.74rem;
+  font-weight: 800;
+  color: var(--berry);
+  font-variant-numeric: tabular-nums;
+}
+
+.rewardIcon {
+  width: 13px;
+  height: 13px;
+}
+
+.progressRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.track {
+  flex: 1;
+  height: 4px;
+  border-radius: 999px;
+  background: var(--chip-bg);
+  overflow: hidden;
+}
+
+.fill {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--primary), var(--gold));
+  transform-origin: left center;
+  transition: transform 0.18s ease;
+}
+
+.done .fill {
+  background: var(--green);
+}
+
+.progressText {
+  flex: none;
+  min-width: 42px;
+  text-align: right;
+  font-size: 0.68rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--muted);
+}
+
+.done .progressText {
+  color: var(--green);
+}

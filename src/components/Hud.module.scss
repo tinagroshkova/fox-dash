@@ -20,7 +20,6 @@
   background: var(--hud-bg);
   border: 1px solid var(--border);
   box-shadow: var(--shadow-soft);
-  backdrop-filter: blur(8px);
 }
 
 .label {
@@ -47,7 +46,6 @@
   background: var(--hud-bg);
   border: 1px solid var(--border);
   box-shadow: var(--shadow-soft);
-  backdrop-filter: blur(8px);
 }
 
 .heartsCritical {
@@ -95,7 +93,6 @@
   background: var(--hud-bg);
   border: 1px solid var(--border);
   box-shadow: var(--shadow-soft);
-  backdrop-filter: blur(8px);
   transform: translateX(-50%) translateY(-8px) scale(0.85);
   opacity: 0;
   pointer-events: none;
@@ -191,7 +188,6 @@
   background: var(--hud-bg);
   border: 1px solid var(--border);
   box-shadow: var(--shadow-soft);
-  backdrop-filter: blur(8px);
 }
 
 .powerupIcon {

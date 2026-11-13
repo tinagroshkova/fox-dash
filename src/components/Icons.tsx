@@ -62,6 +62,43 @@ export const BerryIcon = (props: IconProps) => (
   </svg>
 )
 
+export const AcornIcon = (props: IconProps) => (
+  <svg viewBox="0 0 24 24" aria-hidden="true" {...props}>
+    <path
+      d="M4.5 8.6C4.5 5.9 7.9 4 12 4s7.5 1.9 7.5 4.6c0 1.3-1.1 2.4-2.6 3H7.1c-1.5-.6-2.6-1.7-2.6-3Z"
+      fill="#8b5e3c"
+    />
+    <path
+      d="M7.1 12.4h9.8c-.4 4.1-2.5 7.4-4.9 9.4-2.4-2-4.5-5.3-4.9-9.4Z"
+      fill="currentColor"
+    />
+    <path
+      d="M12 4c.8-1.6 2.2-2.2 4-2-.5 1.8-1.8 2.7-4 2Z"
+      fill="#4fa75f"
+    />
+  </svg>
+)
+
+export const BeeIcon = (props: IconProps) => (
+  <svg viewBox="0 0 24 24" aria-hidden="true" {...props}>
+    <ellipse cx="12" cy="14" rx="6.2" ry="5.2" fill="currentColor" />
+    <path
+      d="M6.4 12.4h11.2M7.4 16.6h9.2"
+      stroke="#2b1d12"
+      strokeWidth="1.6"
+      strokeLinecap="round"
+    />
+    <path
+      d="M8.8 9C7.6 6.2 9 4 10.6 4c1.5 0 2.2 1.8 1.7 4.4M15.2 9c1.2-2.8-.2-5-1.8-5"
+      fill="none"
+      stroke="#2b1d12"
+      strokeWidth="1.3"
+      strokeLinecap="round"
+    />
+    <circle cx="10" cy="11.8" r="0.9" fill="#2b1d12" />
+  </svg>
+)
+
 export const ShieldIcon = (props: IconProps) => (
   <svg viewBox="0 0 24 24" aria-hidden="true" {...props}>
     <path

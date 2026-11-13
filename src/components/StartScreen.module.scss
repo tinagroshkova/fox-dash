@@ -109,6 +109,14 @@
   color: var(--muted);
 }
 
+.wardrobe {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
 .skin strong {
   color: var(--primary);
 }

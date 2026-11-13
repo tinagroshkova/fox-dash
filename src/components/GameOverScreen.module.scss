@@ -182,6 +182,46 @@
   gap: 8px;
 }
 
+.reviveButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 22px;
+  border-radius: 999px;
+  border: 2px solid var(--gold);
+  background: linear-gradient(
+    120deg,
+    rgba(251, 191, 36, 0.18),
+    rgba(249, 115, 22, 0.18)
+  );
+  color: var(--text);
+  font-size: 0.98rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: transform 0.15s ease, background 0.15s ease;
+}
+
+.reviveButton:hover:not(:disabled) {
+  transform: translateY(-1px);
+  background: linear-gradient(
+    120deg,
+    rgba(251, 191, 36, 0.3),
+    rgba(249, 115, 22, 0.3)
+  );
+}
+
+.reviveButton:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+.reviveIcon {
+  width: 18px;
+  height: 18px;
+  color: var(--red);
+}
+
 @media (max-width: 520px) {
   .stats {
     grid-template-columns: repeat(2, minmax(0, 1fr));

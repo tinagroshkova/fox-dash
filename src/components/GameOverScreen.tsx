@@ -1,7 +1,9 @@
 import { useEffect, useState, type CSSProperties } from 'react'
 import { ACHIEVEMENTS } from '../achievements'
+import type { ChallengeDef } from '../challenges'
 import { formattedScore, type World } from '../game'
-import { FoxLogo } from './Icons'
+import { DailyChallenges } from './DailyChallenges'
+import { FoxLogo, HeartIcon } from './Icons'
 import shared from '../styles/shared.module.scss'
 import styles from './GameOverScreen.module.scss'
 
@@ -9,6 +11,12 @@ interface GameOverScreenProps {
   world: World
   isNewBest: boolean
   achievements: string[]
+  challenges: ChallengeDef[]
+  completedChallenges: string[]
+  runBerries: number
+  reviveCost: number
+  canRevive: boolean
+  onRevive: () => void
   onRestart: () => void
 }
 
@@ -73,6 +81,12 @@ export const GameOverScreen = ({
   world,
   isNewBest,
   achievements,
+  challenges,
+  completedChallenges,
+  runBerries,
+  reviveCost,
+  canRevive,
+  onRevive,
   onRestart,
 }: GameOverScreenProps) => {
   const animatedScore = useCountUp(world.score)
@@ -166,6 +180,26 @@ export const GameOverScreen = ({
             </span>
           </div>
         </div>
+
+        <DailyChallenges
+          challenges={challenges}
+          completed={completedChallenges}
+          world={world}
+        />
+
+        {canRevive && (
+          <button
+            type="button"
+            className={styles.reviveButton}
+            onClick={onRevive}
+            disabled={runBerries < reviveCost}
+          >
+            <HeartIcon className={styles.reviveIcon} />
+            {runBerries >= reviveCost
+              ? `Revive · ${reviveCost} berries`
+              : `Need ${reviveCost - runBerries} more berries`}
+          </button>
+        )}
 
         <div className={styles.actions}>
           <button type="button" className={shared.playButton} onClick={onRestart}>

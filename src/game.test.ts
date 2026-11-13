@@ -14,6 +14,7 @@ import {
   MAX_JUMPS,
   MAX_SPEED,
   NEAR_MISS_POINTS,
+  REVIVE_COST,
   START_SPEED,
   biomeFor,
   comboMultiplier,
@@ -24,6 +25,7 @@ import {
   foxBox,
   foxHeight,
   isFrenzy,
+  reviveRun,
   startRun,
   step,
   type Berry,
@@ -43,6 +45,8 @@ const quiet = (world: World): World => ({
   ...world,
   nextObstacleAt: Number.POSITIVE_INFINITY,
   nextBerryAt: Number.POSITIVE_INFINITY,
+  nextPickupAt: Number.POSITIVE_INFINITY,
+  nextHazardAt: Number.POSITIVE_INFINITY,
 })
 
 describe('createWorld', () => {
@@ -495,6 +499,7 @@ describe('power-ups', () => {
     )
     expect(next.shields).toBe(1)
     expect(next.pickups).toHaveLength(0)
+    expect(next.powerupsCollected).toBe(1)
     expect(next.events).toContainEqual(
       expect.objectContaining({ type: 'pickup', pickup: 'shield' }),
     )
@@ -570,6 +575,96 @@ describe('biomes', () => {
     expect(biomeFor(BIOME_LENGTH)).toBe('night')
     expect(biomeFor(BIOME_LENGTH * 2)).toBe('snow')
     expect(biomeFor(BIOME_LENGTH * 3)).toBe('forest')
+  })
+})
+
+describe('hazards', () => {
+  it('loses a heart when a falling acorn hits the fox', () => {
+    const next = step(
+      {
+        ...quiet(playing()),
+        hazards: [{ id: 1, kind: 'acorn', x: 180, y: 44, vx: 0, vy: -200 }],
+      },
+      0.016,
+      { jump: false, duck: false },
+    )
+    expect(next.hearts).toBe(MAX_HEARTS - 1)
+    expect(next.events).toContainEqual({ type: 'hit' })
+    expect(next.hazards).toHaveLength(0)
+  })
+
+  it('moves acorns down and bees extra left', () => {
+    const acorn = step(
+      {
+        ...quiet(playing()),
+        hazards: [{ id: 1, kind: 'acorn', x: 600, y: 300, vx: 0, vy: -200 }],
+      },
+      0.016,
+      { jump: false, duck: false },
+    )
+    expect(acorn.hazards[0]?.y).toBeLessThan(300)
+
+    const bee = step(
+      {
+        ...quiet(playing()),
+        hazards: [{ id: 1, kind: 'bee', x: 600, y: 100, vx: -100, vy: 0 }],
+      },
+      0.016,
+      { jump: false, duck: false },
+    )
+    expect(bee.hazards[0]?.x).toBeLessThan(acorn.hazards[0]?.x ?? 0)
+  })
+
+  it('spawns hazards once the run gets far enough', () => {
+    const world = {
+      ...quiet(playing()),
+      distance: 2100,
+      nextHazardAt: 2000,
+    }
+    const next = step(world, 0.016, { jump: false, duck: false })
+    expect(next.hazards.length).toBeGreaterThan(0)
+  })
+})
+
+describe('reviveRun', () => {
+  const dead = (): World => ({
+    ...playing(),
+    phase: 'over',
+    hearts: 0,
+    score: 321,
+    berriesCollected: REVIVE_COST + 5,
+    obstacles: [createObstacle('rock', 300, 1)],
+    berries: [{ id: 2, x: 300, y: 44 }],
+    pickups: [{ id: 3, kind: 'shield', x: 300, y: 44 }],
+    hazards: [{ id: 4, kind: 'acorn', x: 300, y: 200, vx: 0, vy: -200 }],
+  })
+
+  it('restores one heart, spends run berries, and clears the field', () => {
+    const revived = reviveRun(dead())
+    expect(revived.phase).toBe('playing')
+    expect(revived.hearts).toBe(1)
+    expect(revived.revives).toBe(1)
+    expect(revived.berriesCollected).toBe(5)
+    expect(revived.invincible).toBeGreaterThan(0)
+    expect(revived.obstacles).toHaveLength(0)
+    expect(revived.berries).toHaveLength(0)
+    expect(revived.pickups).toHaveLength(0)
+    expect(revived.hazards).toHaveLength(0)
+  })
+
+  it('only allows a single revive per run', () => {
+    const revived = reviveRun(dead())
+    expect(reviveRun(revived)).toBe(revived)
+  })
+
+  it('requires enough berries from the current run', () => {
+    const broke = { ...dead(), berriesCollected: REVIVE_COST - 1 }
+    expect(reviveRun(broke)).toBe(broke)
+  })
+
+  it('does nothing unless the run is over', () => {
+    const active = playing()
+    expect(reviveRun(active)).toBe(active)
   })
 })
 

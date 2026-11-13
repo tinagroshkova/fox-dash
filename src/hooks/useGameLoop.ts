@@ -1,8 +1,5 @@
 import { useEffect, type RefObject } from 'react'
-import type { SceneBanner } from '../components/GameScene'
 import { step, type GameEvent, type Phase, type World } from '../game'
-import { playCombo } from '../sound'
-import { skinFor, skinName } from '../skins'
 import { saveTotalBerries } from '../storage'
 
 interface GameLoopOptions {
@@ -14,12 +11,11 @@ interface GameLoopOptions {
   jumpHeld: RefObject<boolean>
   duckHeld: RefObject<boolean>
   freezeUntil: RefObject<number>
-  soundRef: RefObject<boolean>
   totalBerriesRef: RefObject<number>
   setTotalBerries: (total: number) => void
   handleEvents: (events: GameEvent[]) => void
   checkAchievements: (world: World) => void
-  showBanner: (text: string, tone: SceneBanner['tone']) => void
+  checkChallenges: (world: World) => void
 }
 
 export const useGameLoop = ({
@@ -31,12 +27,11 @@ export const useGameLoop = ({
   jumpHeld,
   duckHeld,
   freezeUntil,
-  soundRef,
   totalBerriesRef,
   setTotalBerries,
   handleEvents,
   checkAchievements,
-  showBanner,
+  checkChallenges,
 }: GameLoopOptions) => {
   useEffect(() => {
     if (phase !== 'playing' || paused) {
@@ -68,22 +63,15 @@ export const useGameLoop = ({
       if (next !== before) {
         const gained = next.berriesCollected - before.berriesCollected
         if (gained > 0) {
-          const previousSkin = skinFor(totalBerriesRef.current)
           totalBerriesRef.current += gained
-          const unlockedSkin = skinFor(totalBerriesRef.current)
           setTotalBerries(totalBerriesRef.current)
           saveTotalBerries(totalBerriesRef.current)
-          if (unlockedSkin !== previousSkin) {
-            showBanner(`${skinName(unlockedSkin)} fox unlocked!`, 'unlock')
-            if (soundRef.current) {
-              playCombo(4)
-            }
-          }
         }
 
         commit(next)
         handleEvents(next.events)
         checkAchievements(next)
+        checkChallenges(next)
       }
 
       if (next.phase === 'playing') {
@@ -102,11 +90,10 @@ export const useGameLoop = ({
     jumpHeld,
     duckHeld,
     freezeUntil,
-    soundRef,
     totalBerriesRef,
     setTotalBerries,
     handleEvents,
     checkAchievements,
-    showBanner,
+    checkChallenges,
   ])
 }
