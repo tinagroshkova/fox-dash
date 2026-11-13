@@ -4,11 +4,19 @@ import {
   MAGNET_TIME,
   MAX_HEARTS,
   SLOW_TIME,
+  SPEED_BOOST_TIME,
   comboMultiplier,
   formattedScore,
   type World,
 } from '../game'
-import { BerryIcon, ClockIcon, HeartIcon, MagnetIcon, ShieldIcon } from './Icons'
+import {
+  BerryIcon,
+  BoltIcon,
+  ClockIcon,
+  HeartIcon,
+  MagnetIcon,
+  ShieldIcon,
+} from './Icons'
 import styles from './Hud.module.scss'
 
 interface HudProps {
@@ -43,11 +51,17 @@ interface PowerupsProps {
   shields: number
   magnetTimer: number
   slowTimer: number
+  speedBoostTimer: number
 }
 
 const Powerups = memo(
-  ({ shields, magnetTimer, slowTimer }: PowerupsProps) => {
-    if (shields <= 0 && magnetTimer <= 0 && slowTimer <= 0) {
+  ({ shields, magnetTimer, slowTimer, speedBoostTimer }: PowerupsProps) => {
+    if (
+      shields <= 0 &&
+      magnetTimer <= 0 &&
+      slowTimer <= 0 &&
+      speedBoostTimer <= 0
+    ) {
       return null
     }
 
@@ -93,6 +107,25 @@ const Powerups = memo(
                   transform: `scaleX(${Math.max(
                     0,
                     Math.min(1, slowTimer / SLOW_TIME),
+                  )})`,
+                }}
+              />
+            </span>
+          </span>
+        )}
+        {speedBoostTimer > 0 && (
+          <span
+            className={`${styles.powerup} ${styles.powerupSpeed}`}
+            title="Speed boost"
+          >
+            <BoltIcon className={styles.powerupIcon} />
+            <span className={styles.powerupTrack}>
+              <span
+                className={styles.powerupFill}
+                style={{
+                  transform: `scaleX(${Math.max(
+                    0,
+                    Math.min(1, speedBoostTimer / SPEED_BOOST_TIME),
                   )})`,
                 }}
               />
@@ -172,6 +205,7 @@ export const Hud = ({ world }: HudProps) => {
         shields={world.shields}
         magnetTimer={world.magnetTimer}
         slowTimer={world.slowTimer}
+        speedBoostTimer={world.speedBoostTimer}
       />
       <ComboMeter
         combo={world.combo}

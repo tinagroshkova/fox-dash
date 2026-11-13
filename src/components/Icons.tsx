@@ -132,6 +132,12 @@ export const ClockIcon = (props: IconProps) => (
   </svg>
 )
 
+export const BoltIcon = (props: IconProps) => (
+  <svg viewBox="0 0 24 24" aria-hidden="true" {...props}>
+    <path d="M13.5 2 4 14h6.5L10.5 22 20 10h-6.5z" fill="currentColor" />
+  </svg>
+)
+
 export const PauseIcon = (props: IconProps) => (
   <svg viewBox="0 0 24 24" aria-hidden="true" {...props}>
     <rect x="6" y="4.5" width="4" height="15" rx="1.4" fill="currentColor" />

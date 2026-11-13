@@ -52,6 +52,8 @@ export const MAGNET_RADIUS = 250
 export const MAGNET_PULL = 560
 export const SLOW_TIME = 4.5
 export const SLOW_FACTOR = 0.62
+export const SPEED_BOOST_TIME = 5
+export const SPEED_BOOST_FACTOR = 1.45
 export const NEAR_MISS_GAP = 28
 export const NEAR_MISS_POINTS = 8
 
@@ -75,7 +77,7 @@ export const biomeFor = (distance: number): Biome => {
   return 'forest'
 }
 
-export type PickupKind = 'shield' | 'magnet' | 'slow'
+export type PickupKind = 'shield' | 'magnet' | 'slow' | 'life' | 'speed'
 
 export type Phase = 'ready' | 'playing' | 'over'
 
@@ -181,6 +183,7 @@ export interface World {
   bestCombo: number
   magnetTimer: number
   slowTimer: number
+  speedBoostTimer: number
   best: number
   invincible: number
   nextObstacleAt: number
@@ -237,6 +240,7 @@ export const createWorld = (
   bestCombo: 0,
   magnetTimer: 0,
   slowTimer: 0,
+  speedBoostTimer: 0,
   best,
   invincible: 0,
   nextObstacleAt: 900,
@@ -373,9 +377,11 @@ export const step = (prev: World, dt: number, input: InputState): World => {
   const speed = Math.min(MAX_SPEED, START_SPEED + time * SPEED_RAMP)
   let magnetTimer = Math.max(0, prev.magnetTimer - delta)
   let slowTimer = Math.max(0, prev.slowTimer - delta)
-  const moveSpeed = speed * (slowTimer > 0 ? SLOW_FACTOR : 1)
-  const distance = prev.distance + speed * delta
-  let score = prev.score + speed * delta * DISTANCE_SCORE_PER_PX
+  let speedBoostTimer = Math.max(0, prev.speedBoostTimer - delta)
+  const boost = speedBoostTimer > 0 ? SPEED_BOOST_FACTOR : 1
+  const moveSpeed = speed * boost * (slowTimer > 0 ? SLOW_FACTOR : 1)
+  const distance = prev.distance + speed * boost * delta
+  let score = prev.score + speed * boost * delta * DISTANCE_SCORE_PER_PX
   let hearts = prev.hearts
   let shields = prev.shields
   let invincible = Math.max(0, prev.invincible - delta)
@@ -603,12 +609,30 @@ export const step = (prev: World, dt: number, input: InputState): World => {
           x: firstPickup.x,
           y: firstPickup.y,
         })
-      } else {
+      } else if (firstPickup.kind === 'slow') {
         slowTimer = SLOW_TIME
         events.push({
           type: 'pickup',
           pickup: 'slow',
           label: 'Slow-mo!',
+          x: firstPickup.x,
+          y: firstPickup.y,
+        })
+      } else if (firstPickup.kind === 'life') {
+        hearts = Math.min(MAX_HEARTS, hearts + 1)
+        events.push({
+          type: 'pickup',
+          pickup: 'life',
+          label: 'Extra life!',
+          x: firstPickup.x,
+          y: firstPickup.y,
+        })
+      } else {
+        speedBoostTimer = SPEED_BOOST_TIME
+        events.push({
+          type: 'pickup',
+          pickup: 'speed',
+          label: 'Speed boost!',
           x: firstPickup.x,
           y: firstPickup.y,
         })
@@ -657,7 +681,17 @@ export const step = (prev: World, dt: number, input: InputState): World => {
     if (!blocked) {
       const roll = rng()
       const kind: PickupKind =
-        roll < 0.4 ? 'shield' : roll < 0.72 ? 'magnet' : 'slow'
+        roll < 0.3
+          ? 'shield'
+          : roll < 0.52
+            ? 'magnet'
+            : roll < 0.7
+              ? 'slow'
+              : roll < 0.85
+                ? hearts < MAX_HEARTS
+                  ? 'life'
+                  : 'shield'
+                : 'speed'
       const y = rng() < 0.5 ? 72 : 132
       pickups = [...pickups, { id: nextId, kind, x: startX, y }]
       nextId += 1
@@ -724,6 +758,7 @@ export const step = (prev: World, dt: number, input: InputState): World => {
     bestCombo,
     magnetTimer,
     slowTimer,
+    speedBoostTimer,
     best,
     invincible,
     nextObstacleAt,

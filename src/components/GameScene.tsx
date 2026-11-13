@@ -22,6 +22,7 @@ import type { Skin } from '../skins'
 import {
   AcornIcon,
   BeeIcon,
+  BoltIcon,
   ClockIcon,
   HeartIcon,
   MagnetIcon,
@@ -294,6 +295,9 @@ export const GameScene = ({
       {world.slowTimer > 0 && (
         <div className={styles.slowOverlay} aria-hidden="true" />
       )}
+      {world.speedBoostTimer > 0 && (
+        <div className={styles.speedOverlay} aria-hidden="true" />
+      )}
 
       {world.hazards.map((hazard) => (
         <div
@@ -324,7 +328,11 @@ export const GameScene = ({
               ? styles.pickupShield
               : pickup.kind === 'magnet'
                 ? styles.pickupMagnet
-                : styles.pickupSlow
+                : pickup.kind === 'slow'
+                  ? styles.pickupSlow
+                  : pickup.kind === 'life'
+                    ? styles.pickupLife
+                    : styles.pickupSpeed
           }`}
           style={{
             left: pctX(pickup.x - PICKUP_RADIUS),
@@ -337,8 +345,12 @@ export const GameScene = ({
             <ShieldIcon className={styles.pickupIcon} />
           ) : pickup.kind === 'magnet' ? (
             <MagnetIcon className={styles.pickupIcon} />
-          ) : (
+          ) : pickup.kind === 'slow' ? (
             <ClockIcon className={styles.pickupIcon} />
+          ) : pickup.kind === 'life' ? (
+            <HeartIcon className={styles.pickupIcon} />
+          ) : (
+            <BoltIcon className={styles.pickupIcon} />
           )}
         </div>
       ))}

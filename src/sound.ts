@@ -108,11 +108,28 @@ export const playStart = (): void => {
   tone({ frequency: 784, duration: 0.16, type: 'triangle', gain: 0.06, delay: 0.1 })
 }
 
-export const playPickup = (kind: 'shield' | 'magnet' | 'slow'): void => {
-  const base = kind === 'shield' ? 520 : kind === 'magnet' ? 620 : 440
+export const playPickup = (
+  kind: 'shield' | 'magnet' | 'slow' | 'life' | 'speed',
+): void => {
+  const base =
+    kind === 'shield'
+      ? 520
+      : kind === 'magnet'
+        ? 620
+        : kind === 'slow'
+          ? 440
+          : kind === 'life'
+            ? 680
+            : 780
   tone({ frequency: base, duration: 0.12, type: 'triangle', gain: 0.07 })
   tone({ frequency: base * 1.5, duration: 0.16, type: 'sine', gain: 0.06, delay: 0.08 })
   tone({ frequency: base * 2, duration: 0.18, type: 'sine', gain: 0.04, delay: 0.16 })
+  if (kind === 'life') {
+    tone({ frequency: base * 2.5, duration: 0.2, type: 'sine', gain: 0.035, delay: 0.24 })
+  }
+  if (kind === 'speed') {
+    tone({ frequency: base * 1.25, duration: 0.1, type: 'sawtooth', gain: 0.03, delay: 0.04 })
+  }
 }
 
 export const playShield = (): void => {

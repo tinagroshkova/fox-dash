@@ -15,6 +15,7 @@ import {
   MAX_SPEED,
   NEAR_MISS_POINTS,
   REVIVE_COST,
+  SPEED_BOOST_TIME,
   START_SPEED,
   biomeFor,
   comboMultiplier,
@@ -548,6 +549,68 @@ describe('power-ups', () => {
     expect(next.shields).toBe(0)
     expect(next.events).toContainEqual({ type: 'shield' })
     expect(next.events).not.toContainEqual({ type: 'hit' })
+  })
+
+  it('restores a heart from a life pickup', () => {
+    const next = step(
+      {
+        ...quiet(playing()),
+        hearts: 1,
+        pickups: [{ id: 1, kind: 'life', x: 180, y: 44 }],
+      },
+      0.016,
+      { jump: false, duck: false },
+    )
+    expect(next.hearts).toBe(2)
+    expect(next.pickups).toHaveLength(0)
+    expect(next.events).toContainEqual(
+      expect.objectContaining({ type: 'pickup', pickup: 'life' }),
+    )
+  })
+
+  it('never collects more than the maximum number of hearts', () => {
+    const next = step(
+      {
+        ...quiet(playing()),
+        pickups: [{ id: 1, kind: 'life', x: 180, y: 44 }],
+      },
+      0.016,
+      { jump: false, duck: false },
+    )
+    expect(next.hearts).toBe(MAX_HEARTS)
+  })
+
+  it('starts a speed boost from a speed pickup', () => {
+    const next = step(
+      {
+        ...quiet(playing()),
+        pickups: [{ id: 1, kind: 'speed', x: 180, y: 44 }],
+      },
+      0.016,
+      { jump: false, duck: false },
+    )
+    expect(next.speedBoostTimer).toBe(SPEED_BOOST_TIME)
+    expect(next.events).toContainEqual(
+      expect.objectContaining({ type: 'pickup', pickup: 'speed' }),
+    )
+  })
+
+  it('scrolls entities faster while a speed boost is active', () => {
+    const berry: Berry = { id: 1, x: 600, y: 44 }
+    const normal = step(
+      { ...quiet(playing()), berries: [berry] },
+      0.016,
+      { jump: false, duck: false },
+    )
+    const boosted = step(
+      { ...quiet(playing()), speedBoostTimer: 1, berries: [berry] },
+      0.016,
+      { jump: false, duck: false },
+    )
+    const normalX = normal.berries[0]?.x ?? 0
+    const boostedX = boosted.berries[0]?.x ?? 0
+    expect(boostedX).toBeLessThan(normalX)
+    expect(boosted.speedBoostTimer).toBeCloseTo(1 - 0.016)
   })
 })
 

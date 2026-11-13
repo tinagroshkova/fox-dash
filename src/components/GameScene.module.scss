@@ -717,6 +717,16 @@
   box-shadow: 0 0 16px rgba(124, 58, 237, 0.75);
 }
 
+.pickupLife {
+  background: radial-gradient(circle at 35% 30%, #fda4af, #e11d48 70%);
+  box-shadow: 0 0 16px rgba(225, 29, 72, 0.75);
+}
+
+.pickupSpeed {
+  background: radial-gradient(circle at 35% 30%, #fde68a, #f59e0b 70%);
+  box-shadow: 0 0 16px rgba(245, 158, 11, 0.8);
+}
+
 .shieldBubble {
   position: absolute;
   z-index: 9;
@@ -753,6 +763,29 @@
     transparent 32%,
     rgba(76, 29, 149, 0.22) 100%
   );
+}
+
+.speedOverlay {
+  position: absolute;
+  inset: 0;
+  z-index: 16;
+  pointer-events: none;
+  background: radial-gradient(
+    circle at 60% 52%,
+    transparent 36%,
+    rgba(245, 158, 11, 0.2) 100%
+  );
+  animation: speedPulse 0.6s ease-in-out infinite;
+}
+
+@keyframes speedPulse {
+  0%,
+  100% {
+    opacity: 0.55;
+  }
+  50% {
+    opacity: 0.9;
+  }
 }
 
 .biomeBanner {
