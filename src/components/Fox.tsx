@@ -15,6 +15,7 @@ interface FoxProps {
   hurt: boolean
   flipping: boolean
   frenzy: boolean
+  dashing: boolean
   skin: Skin
 }
 
@@ -24,6 +25,7 @@ export const Fox = memo(({
   hurt,
   flipping,
   frenzy,
+  dashing,
   skin,
 }: FoxProps) => {
   const classes = [
@@ -34,6 +36,7 @@ export const Fox = memo(({
     hurt ? styles.hurt : '',
     flipping ? styles.flipping : '',
     frenzy ? styles.frenzy : '',
+    dashing ? styles.dashing : '',
   ]
     .filter(Boolean)
     .join(' ')

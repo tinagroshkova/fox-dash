@@ -10,6 +10,7 @@ interface GameLoopOptions {
   jumpQueued: RefObject<boolean>
   jumpHeld: RefObject<boolean>
   duckHeld: RefObject<boolean>
+  dashQueued: RefObject<boolean>
   freezeUntil: RefObject<number>
   totalBerriesRef: RefObject<number>
   setTotalBerries: (total: number) => void
@@ -26,6 +27,7 @@ export const useGameLoop = ({
   jumpQueued,
   jumpHeld,
   duckHeld,
+  dashQueued,
   freezeUntil,
   totalBerriesRef,
   setTotalBerries,
@@ -55,8 +57,10 @@ export const useGameLoop = ({
         jump: jumpQueued.current,
         duck: duckHeld.current,
         jumpHeld: jumpHeld.current,
+        dash: dashQueued.current,
       }
       jumpQueued.current = false
+      dashQueued.current = false
 
       const before = worldRef.current
       const next = step(before, dt, input)
@@ -89,6 +93,7 @@ export const useGameLoop = ({
     jumpQueued,
     jumpHeld,
     duckHeld,
+    dashQueued,
     freezeUntil,
     totalBerriesRef,
     setTotalBerries,

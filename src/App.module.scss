@@ -170,12 +170,30 @@
   transform: translateY(2px) scale(0.98);
 }
 
+.controlButton:disabled {
+  opacity: 0.55;
+  cursor: default;
+  transform: none;
+  box-shadow: var(--shadow-soft);
+}
+
 .duckButton {
   background: var(--surface);
 }
 
 .duckButton:active {
   background: var(--chip-bg);
+}
+
+.dashButton {
+  background: linear-gradient(120deg, var(--accent), var(--green));
+  border-color: transparent;
+  color: #ffffff;
+  box-shadow: 0 12px 24px rgba(20, 184, 166, 0.3);
+}
+
+.dashButton:active {
+  box-shadow: 0 6px 14px rgba(20, 184, 166, 0.3);
 }
 
 .jumpButton {

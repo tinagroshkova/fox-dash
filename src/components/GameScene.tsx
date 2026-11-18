@@ -85,6 +85,8 @@ const effectClassFor = (kind: VisualEffect['kind']): string => {
       return styles.effectNear ?? ''
     case 'land':
       return styles.effectLand ?? ''
+    case 'dash':
+      return styles.effectDash ?? ''
     default:
       return ''
   }
@@ -261,6 +263,8 @@ export const GameScene = ({
     world.invincible > INVINCIBLE_TIME - 0.25
   const frenzy = isFrenzy(world.combo)
   const biome = biomeFor(world.distance)
+  const foxX = FOX_X + world.fox.dashOffset
+  const dashing = world.fox.dashTimer > 0
   const speedRatio = Math.min(
     1,
     Math.max(0, (world.speed - START_SPEED) / (MAX_SPEED - START_SPEED)),
@@ -407,7 +411,7 @@ export const GameScene = ({
         <div
           className={styles.frenzyAura}
           style={{
-            left: pctX(FOX_X - 26),
+            left: pctX(foxX - 26),
             bottom: pctY(GROUND_HEIGHT + world.fox.y - 14),
             width: pctX(FOX_WIDTH + 52),
             height: pctY(foxHeight(world.fox) + 28),
@@ -420,7 +424,7 @@ export const GameScene = ({
         <div
           className={styles.magnetAura}
           style={{
-            left: pctX(FOX_X - 30),
+            left: pctX(foxX - 30),
             bottom: pctY(GROUND_HEIGHT + world.fox.y - 18),
             width: pctX(FOX_WIDTH + 60),
             height: pctY(foxHeight(world.fox) + 36),
@@ -433,7 +437,7 @@ export const GameScene = ({
         <div
           className={styles.shieldBubble}
           style={{
-            left: pctX(FOX_X - 12),
+            left: pctX(foxX - 12),
             bottom: pctY(GROUND_HEIGHT + world.fox.y - 10),
             width: pctX(FOX_WIDTH + 24),
             height: pctY(foxHeight(world.fox) + 20),
@@ -442,10 +446,23 @@ export const GameScene = ({
         />
       )}
 
+      {dashing && (
+        <div
+          className={styles.dashTrail}
+          style={{
+            left: pctX(foxX - 120),
+            bottom: pctY(GROUND_HEIGHT + world.fox.y + foxHeight(world.fox) * 0.2),
+            width: pctX(FOX_WIDTH + 150),
+            height: pctY(foxHeight(world.fox) * 0.6),
+          }}
+          aria-hidden="true"
+        />
+      )}
+
       <div
         className={styles.foxWrap}
         style={{
-          left: pctX(FOX_X),
+          left: pctX(foxX),
           bottom: pctY(GROUND_HEIGHT + world.fox.y),
           width: pctX(FOX_WIDTH),
           height: pctY(foxHeight(world.fox)),
@@ -457,6 +474,7 @@ export const GameScene = ({
           hurt={hurt}
           flipping={flipping}
           frenzy={frenzy}
+          dashing={dashing}
           skin={skin}
         />
       </div>

@@ -269,6 +269,32 @@
   transition: height 0.08s linear;
 }
 
+.dashTrail {
+  position: absolute;
+  z-index: 4;
+  pointer-events: none;
+  border-radius: 999px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(45, 212, 191, 0.15) 35%,
+    rgba(251, 191, 36, 0.6)
+  );
+  filter: blur(3px);
+  animation: dashTrail 0.32s ease-out forwards;
+}
+
+@keyframes dashTrail {
+  from {
+    opacity: 0.95;
+    transform: translateX(18px) scaleX(0.55);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(-24px) scaleX(1);
+  }
+}
+
 .speedLines {
   position: absolute;
   inset: 0;
@@ -838,7 +864,8 @@
 .effectShield::before,
 .effectPickup::before,
 .effectLand::before,
-.effectNear::before {
+.effectNear::before,
+.effectDash::before {
   content: '';
   position: absolute;
   left: 0;
@@ -863,6 +890,11 @@
 
 .effectLand::before {
   border-color: rgba(255, 255, 255, 0.7);
+}
+
+.effectDash::before {
+  border-color: #2dd4bf;
+  box-shadow: 0 0 16px rgba(45, 212, 191, 0.8);
 }
 
 .effectNear::before {

@@ -9,6 +9,7 @@ export type EffectKind =
   | 'shield'
   | 'near'
   | 'land'
+  | 'dash'
 
 export interface Particle {
   dx: number
@@ -97,6 +98,20 @@ export const createDoubleJumpEffect = (
   value: 0,
   multiplier: 0,
   particles: makeParticles(id * 53 + 5, 12, ['gold', 'spark', 'leaf']),
+})
+
+export const createDashEffect = (
+  id: number,
+  x: number,
+  y: number,
+): VisualEffect => ({
+  id,
+  kind: 'dash',
+  x,
+  y,
+  value: 0,
+  multiplier: 0,
+  particles: makeParticles(id * 67 + 23, 12, ['spark', 'gold', 'dust']),
 })
 
 export const createLifeLostEffect = (

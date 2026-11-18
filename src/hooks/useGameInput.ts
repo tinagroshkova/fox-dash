@@ -13,6 +13,7 @@ interface GameInputOptions {
   jumpQueued: RefObject<boolean>
   jumpHeld: RefObject<boolean>
   duckHeld: RefObject<boolean>
+  dashQueued: RefObject<boolean>
   onStart: () => void
   onTogglePause: () => void
   onPause: () => void
@@ -24,6 +25,9 @@ const isJumpKey = (key: string): boolean =>
 const isDuckKey = (key: string): boolean =>
   key === 'ArrowDown' || key === 's' || key === 'S'
 
+const isDashKey = (key: string): boolean =>
+  key === 'Shift' || key === 'x' || key === 'X'
+
 const isPauseKey = (key: string): boolean =>
   key === 'p' || key === 'P' || key === 'Escape'
 
@@ -34,6 +38,7 @@ export const useGameInput = ({
   jumpQueued,
   jumpHeld,
   duckHeld,
+  dashQueued,
   onStart,
   onTogglePause,
   onPause,
@@ -63,6 +68,17 @@ export const useGameInput = ({
       } else if (isDuckKey(key)) {
         event.preventDefault()
         duckHeld.current = true
+      } else if (isDashKey(key)) {
+        event.preventDefault()
+        if (playing && paused) {
+          return
+        }
+        if (event.repeat) {
+          return
+        }
+        if (playing) {
+          dashQueued.current = true
+        }
       } else if (isPauseKey(key) && playing) {
         event.preventDefault()
         onTogglePause()
@@ -94,6 +110,7 @@ export const useGameInput = ({
     jumpQueued,
     jumpHeld,
     duckHeld,
+    dashQueued,
     onStart,
     onTogglePause,
   ])
@@ -104,13 +121,14 @@ export const useGameInput = ({
         jumpQueued.current = false
         jumpHeld.current = false
         duckHeld.current = false
+        dashQueued.current = false
         onPause()
       }
     }
     document.addEventListener('visibilitychange', onVisibilityChange)
     return () =>
       document.removeEventListener('visibilitychange', onVisibilityChange)
-  }, [worldRef, jumpQueued, jumpHeld, duckHeld, onPause])
+  }, [worldRef, jumpQueued, jumpHeld, duckHeld, dashQueued, onPause])
 
   useEffect(() => {
     const clearHeld = () => {
@@ -149,6 +167,19 @@ export const useGameInput = ({
     [worldRef, paused, disabled, jumpQueued, jumpHeld],
   )
 
+  const handleDash = useCallback(
+    (event: ReactPointerEvent<HTMLButtonElement>) => {
+      event.preventDefault()
+      if (disabled) {
+        return
+      }
+      if (worldRef.current.phase === 'playing' && !paused) {
+        dashQueued.current = true
+      }
+    },
+    [worldRef, paused, disabled, dashQueued],
+  )
+
   const handleDuckStart = useCallback(
     (event: ReactPointerEvent<HTMLButtonElement>) => {
       event.preventDefault()
@@ -165,5 +196,11 @@ export const useGameInput = ({
     duckHeld.current = false
   }, [duckHeld])
 
-  return { handleScenePointer, handleJump, handleDuckStart, handleDuckEnd }
+  return {
+    handleScenePointer,
+    handleJump,
+    handleDash,
+    handleDuckStart,
+    handleDuckEnd,
+  }
 }

@@ -4,6 +4,7 @@ import {
   BIOME_LENGTH,
   COMBO_WINDOW,
   COYOTE_TIME,
+  DASH_COOLDOWN,
   DOUBLE_JUMP_VELOCITY,
   FOX_DUCK_HEIGHT,
   FOX_STAND_HEIGHT,
@@ -488,6 +489,68 @@ describe('forgiving jump controls', () => {
   })
 })
 
+describe('dash', () => {
+  it('starts a dash and emits a dash event', () => {
+    const next = step(quiet(playing()), 0.016, {
+      jump: false,
+      duck: false,
+      dash: true,
+    })
+    expect(next.fox.dashTimer).toBeGreaterThan(0)
+    expect(next.fox.dashCooldown).toBe(DASH_COOLDOWN)
+    expect(next.events).toContainEqual({ type: 'dash' })
+  })
+
+  it('lunges the fox forward and then returns', () => {
+    let world = step(quiet(playing()), 0.016, {
+      jump: false,
+      duck: false,
+      dash: true,
+    })
+    expect(world.fox.dashOffset).toBe(0)
+
+    world = step(world, 0.08, { jump: false, duck: false })
+    expect(world.fox.dashOffset).toBeGreaterThan(0)
+    expect(foxBox(world.fox).left).toBeGreaterThan(foxBox(createWorld().fox).left)
+
+    for (let i = 0; i < 40; i += 1) {
+      world = step(world, 0.02, { jump: false, duck: false })
+    }
+    expect(world.fox.dashOffset).toBe(0)
+  })
+
+  it('ignores dash while it is cooling down', () => {
+    let world = step(quiet(playing()), 0.016, {
+      jump: false,
+      duck: false,
+      dash: true,
+    })
+    const before = world.fox.dashCooldown
+    const next = step(world, 0.016, {
+      jump: false,
+      duck: false,
+      dash: true,
+    })
+    expect(next.events).not.toContainEqual(
+      expect.objectContaining({ type: 'dash' }),
+    )
+    expect(next.fox.dashCooldown).toBeLessThan(before)
+  })
+
+  it('dashes through obstacles without losing a heart', () => {
+    const next = step(
+      {
+        ...quiet(playing()),
+        obstacles: [createObstacle('rock', 150, 1)],
+      },
+      0.016,
+      { jump: false, duck: false, dash: true },
+    )
+    expect(next.hearts).toBe(MAX_HEARTS)
+    expect(next.events).not.toContainEqual({ type: 'hit' })
+  })
+})
+
 describe('power-ups', () => {
   it('collects a shield pickup', () => {
     const next = step(
@@ -686,6 +749,38 @@ describe('hazards', () => {
     }
     const next = step(world, 0.016, { jump: false, duck: false })
     expect(next.hazards.length).toBeGreaterThan(0)
+  })
+
+  const forcedAcornWorld = (aimRoll: number): World => {
+    const values = [0, 0.5, 0.5, 0.5, aimRoll, 0.5]
+    let index = 0
+    const rng = (): number => values[Math.min(index++, values.length - 1)] ?? 0.5
+    return {
+      ...quiet(playing()),
+      distance: 2100,
+      nextHazardAt: 2000,
+      rng,
+    }
+  }
+
+  const fallFor = (world: World): World => {
+    let next = world
+    for (let i = 0; i < 200; i += 1) {
+      next = step(next, 1 / 60, { jump: false, duck: false })
+    }
+    return next
+  }
+
+  it('aims acorns away from the fox so they can be dodged', () => {
+    const aimed = fallFor(
+      step(forcedAcornWorld(1), 1 / 60, { jump: false, duck: false }),
+    )
+    expect(aimed.hearts).toBe(MAX_HEARTS)
+
+    const homing = fallFor(
+      step(forcedAcornWorld(0.5), 1 / 60, { jump: false, duck: false }),
+    )
+    expect(homing.hearts).toBe(MAX_HEARTS - 1)
   })
 })
 

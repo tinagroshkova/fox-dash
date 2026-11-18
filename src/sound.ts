@@ -72,6 +72,11 @@ export const playDoubleJump = (): void => {
   tone({ frequency: 1040, duration: 0.14, type: 'sine', gain: 0.05, delay: 0.08 })
 }
 
+export const playDash = (): void => {
+  tone({ frequency: 240, endFrequency: 760, duration: 0.16, type: 'sawtooth', gain: 0.05 })
+  tone({ frequency: 940, duration: 0.1, type: 'sine', gain: 0.03, delay: 0.03 })
+}
+
 export const playBerry = (combo = 1): void => {
   const lift = Math.min(combo, 8) * 32
   tone({ frequency: 880 + lift, duration: 0.09, type: 'sine', gain: 0.06 })

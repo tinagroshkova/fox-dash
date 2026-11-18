@@ -143,11 +143,13 @@ AppHeader.displayName = 'AppHeader'
 interface GameControlsProps {
   onDuckStart: (event: ReactPointerEvent<HTMLButtonElement>) => void
   onDuckEnd: () => void
+  onDash: (event: ReactPointerEvent<HTMLButtonElement>) => void
   onJump: (event: ReactPointerEvent<HTMLButtonElement>) => void
+  dashReady: boolean
 }
 
 const GameControls = memo(
-  ({ onDuckStart, onDuckEnd, onJump }: GameControlsProps) => (
+  ({ onDuckStart, onDuckEnd, onDash, onJump, dashReady }: GameControlsProps) => (
     <div className={styles.controls}>
       <button
         type="button"
@@ -158,6 +160,15 @@ const GameControls = memo(
         onPointerCancel={onDuckEnd}
       >
         Duck
+      </button>
+      <button
+        type="button"
+        className={`${styles.controlButton} ${styles.dashButton}`}
+        onPointerDown={onDash}
+        disabled={!dashReady}
+        title="Dash (Shift)"
+      >
+        {dashReady ? 'Dash' : 'Charging…'}
       </button>
       <button
         type="button"
@@ -197,6 +208,7 @@ export const App = () => {
   const jumpQueued = useRef(false)
   const jumpHeld = useRef(false)
   const duckHeld = useRef(false)
+  const dashQueued = useRef(false)
   const totalBerriesRef = useRef(totalBerries)
   const achievementsRef = useRef(achievements)
   const lastCombo = useRef(0)
@@ -215,6 +227,7 @@ export const App = () => {
     jumpQueued.current = false
     jumpHeld.current = false
     duckHeld.current = false
+    dashQueued.current = false
     setPaused((value) => !value)
   }, [])
 
@@ -278,6 +291,7 @@ export const App = () => {
     jumpQueued.current = false
     jumpHeld.current = false
     duckHeld.current = false
+    dashQueued.current = false
     lastCombo.current = 0
     freezeUntil.current = 0
     setBanner(null)
@@ -342,24 +356,31 @@ export const App = () => {
     jumpQueued.current = false
     jumpHeld.current = false
     duckHeld.current = false
+    dashQueued.current = false
     if (soundRef.current) {
       playRevive()
     }
     commit(reviveRun(worldRef.current))
   }, [commit])
 
-  const { handleScenePointer, handleJump, handleDuckStart, handleDuckEnd } =
-    useGameInput({
-      worldRef,
-      paused,
-      disabled: shopOpen,
-      jumpQueued,
-      jumpHeld,
-      duckHeld,
-      onStart: handleStart,
-      onTogglePause: togglePause,
-      onPause: autoPause,
-    })
+  const {
+    handleScenePointer,
+    handleJump,
+    handleDash,
+    handleDuckStart,
+    handleDuckEnd,
+  } = useGameInput({
+    worldRef,
+    paused,
+    disabled: shopOpen,
+    jumpQueued,
+    jumpHeld,
+    duckHeld,
+    dashQueued,
+    onStart: handleStart,
+    onTogglePause: togglePause,
+    onPause: autoPause,
+  })
 
   useGameLoop({
     phase: world.phase,
@@ -369,6 +390,7 @@ export const App = () => {
     jumpQueued,
     jumpHeld,
     duckHeld,
+    dashQueued,
     freezeUntil,
     totalBerriesRef,
     setTotalBerries,
@@ -493,13 +515,15 @@ export const App = () => {
       <GameControls
         onDuckStart={handleDuckStart}
         onDuckEnd={handleDuckEnd}
+        onDash={handleDash}
         onJump={handleJump}
+        dashReady={world.fox.dashCooldown <= 0}
       />
 
       <p className={styles.hint}>
         Space or tap the scene to jump — press again in mid-air for a spin jump.
-        Hold Down or the Duck button to slide under branches. Press P or Esc to
-        pause.
+        Hold Down or the Duck button to slide under branches. Press Shift or the
+        Dash button to dash through obstacles. Press P or Esc to pause.
       </p>
     </main>
   )

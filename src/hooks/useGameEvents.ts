@@ -7,6 +7,7 @@ import {
 import type { SceneBanner } from '../components/GameScene'
 import {
   createBerryEffect,
+  createDashEffect,
   createDoubleJumpEffect,
   createHitEffect,
   createLandingEffect,
@@ -21,6 +22,7 @@ import { comboCelebration } from '../helpers/combo'
 import {
   playBerry,
   playCombo,
+  playDash,
   playDoubleJump,
   playGameOver,
   playHit,
@@ -84,6 +86,19 @@ export const useGameEvents = ({
           } else if (soundRef.current) {
             playJump()
           }
+        } else if (event.type === 'dash') {
+          if (soundRef.current) {
+            playDash()
+          }
+          const fox = worldRef.current.fox
+          spawnEffect(
+            createDashEffect(
+              effectId.current++,
+              FOX_X + FOX_WIDTH / 2 + fox.dashOffset,
+              fox.y + 32,
+            ),
+          )
+          navigator.vibrate?.(10)
         } else if (event.type === 'berry') {
           if (soundRef.current) {
             playBerry(event.combo ?? 1)

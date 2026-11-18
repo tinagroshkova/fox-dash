@@ -17,6 +17,11 @@ export const COYOTE_TIME = 0.1
 export const JUMP_BUFFER_TIME = 0.12
 export const RELEASE_GRAVITY_MULTIPLIER = 2.1
 
+export const DASH_DISTANCE = 130
+export const DASH_DURATION = 0.26
+export const DASH_INVINCIBLE_TIME = 0.42
+export const DASH_COOLDOWN = 1.5
+
 export const START_SPEED = 300
 export const MAX_SPEED = 760
 export const SPEED_RAMP = 8
@@ -58,6 +63,7 @@ export const NEAR_MISS_GAP = 28
 export const NEAR_MISS_POINTS = 8
 
 export const HAZARD_RADIUS = 15
+export const ACORN_AIM_SPREAD = 220
 export const BEE_SPEED = 90
 export const REVIVE_COST = 25
 export const MAX_REVIVES = 1
@@ -92,6 +98,9 @@ export interface Fox {
   coyote: number
   jumpBuffer: number
   step: number
+  dashTimer: number
+  dashCooldown: number
+  dashOffset: number
 }
 
 export interface Pickup {
@@ -138,6 +147,7 @@ export interface InputState {
   jump: boolean
   duck: boolean
   jumpHeld?: boolean
+  dash?: boolean
 }
 
 export type GameEventType =
@@ -149,6 +159,7 @@ export type GameEventType =
   | 'pickup'
   | 'shield'
   | 'nearmiss'
+  | 'dash'
 
 export interface GameEvent {
   type: GameEventType
@@ -224,6 +235,9 @@ export const createWorld = (
     coyote: COYOTE_TIME,
     jumpBuffer: 0,
     step: 0,
+    dashTimer: 0,
+    dashCooldown: 0,
+    dashOffset: 0,
   },
   obstacles: [],
   berries: [],
@@ -279,6 +293,9 @@ export const reviveRun = (world: World): World => {
       jumps: 0,
       coyote: COYOTE_TIME,
       jumpBuffer: 0,
+      dashTimer: 0,
+      dashCooldown: 0,
+      dashOffset: 0,
     },
     obstacles: [],
     berries: [],
@@ -304,9 +321,10 @@ export const foxHeight = (fox: Fox): number =>
 
 export const foxBox = (fox: Fox): Box => {
   const height = foxHeight(fox)
+  const left = FOX_X + fox.dashOffset
   return {
-    left: FOX_X + 8,
-    right: FOX_X + FOX_WIDTH - 8,
+    left: left + 8,
+    right: left + FOX_WIDTH - 8,
     bottom: fox.y + 4,
     top: fox.y + height - 4,
   }
@@ -401,6 +419,16 @@ export const step = (prev: World, dt: number, input: InputState): World => {
   const wasOnGround = prev.fox.onGround
   const jumpHeld = input.jumpHeld ?? input.jump
 
+  fox.dashCooldown = Math.max(0, fox.dashCooldown - delta)
+  if (fox.dashTimer > 0) {
+    fox.dashTimer = Math.max(0, fox.dashTimer - delta)
+  }
+  if (input.dash && fox.dashCooldown <= 0) {
+    fox.dashTimer = DASH_INVINCIBLE_TIME
+    fox.dashCooldown = DASH_COOLDOWN
+    events.push({ type: 'dash' })
+  }
+
   fox.jumpBuffer = Math.max(0, fox.jumpBuffer - delta)
   if (input.jump) {
     fox.jumpBuffer = JUMP_BUFFER_TIME
@@ -425,6 +453,13 @@ export const step = (prev: World, dt: number, input: InputState): World => {
 
   fox.ducking = input.duck
 
+  const dashElapsed = DASH_INVINCIBLE_TIME - fox.dashTimer
+  fox.dashOffset =
+    fox.dashTimer > 0
+      ? DASH_DISTANCE *
+        Math.sin(clamp(dashElapsed / DASH_DURATION, 0, 1) * Math.PI)
+      : 0
+
   if (!fox.onGround) {
     let gravity = GRAVITY * (input.duck ? FAST_FALL_MULTIPLIER : 1)
     if (!jumpHeld && fox.vy > 0) {
@@ -441,7 +476,7 @@ export const step = (prev: World, dt: number, input: InputState): World => {
       if (!wasOnGround) {
         events.push({
           type: 'land',
-          x: FOX_X + FOX_WIDTH / 2,
+          x: FOX_X + fox.dashOffset + FOX_WIDTH / 2,
           y: 0,
         })
       }
@@ -477,12 +512,12 @@ export const step = (prev: World, dt: number, input: InputState): World => {
     }
   }
 
-  if (hit.size > 0 && invincible <= 0) {
+  if (hit.size > 0 && invincible <= 0 && fox.dashTimer <= 0) {
     damageFox()
     obstacles = obstacles.filter((obstacle) => !hit.has(obstacle.id))
   }
 
-  const foxLeft = FOX_X + 8
+  const foxLeft = fbox.left
   for (const obstacle of obstacles) {
     if (hit.has(obstacle.id)) {
       continue
@@ -505,7 +540,7 @@ export const step = (prev: World, dt: number, input: InputState): World => {
       events.push({
         type: 'nearmiss',
         value: NEAR_MISS_POINTS,
-        x: FOX_X + FOX_WIDTH,
+        x: FOX_X + fox.dashOffset + FOX_WIDTH,
         y: fox.y + foxHeight(fox) / 2,
       })
     }
@@ -522,7 +557,7 @@ export const step = (prev: World, dt: number, input: InputState): World => {
   const hazardHit = hazards.find((hazard) =>
     boxesOverlap(fbox, hazardBox(hazard)),
   )
-  if (hazardHit && invincible <= 0) {
+  if (hazardHit && invincible <= 0 && fox.dashTimer <= 0) {
     damageFox()
     hazards = hazards.filter((hazard) => hazard.id !== hazardHit.id)
   }
@@ -532,7 +567,7 @@ export const step = (prev: World, dt: number, input: InputState): World => {
     .filter((berry) => berry.x > -60)
 
   if (magnetTimer > 0) {
-    const targetX = FOX_X + FOX_WIDTH / 2
+    const targetX = FOX_X + fox.dashOffset + FOX_WIDTH / 2
     const targetY = fox.y + foxHeight(fox) / 2
     berries = berries.map((berry) => {
       const dx = targetX - berry.x
@@ -707,9 +742,10 @@ export const step = (prev: World, dt: number, input: InputState): World => {
     const x = LOGICAL_WIDTH + 80 + rng() * 100
     const y = kind === 'acorn' ? SKY_HEIGHT + 20 + rng() * 60 : 55 + rng() * 50
     const targetY = 30 + rng() * 30
+    const aimOffset = kind === 'acorn' ? (rng() - 0.5) * 2 * ACORN_AIM_SPREAD : 0
     const travel = Math.max(
       0.8,
-      (x - (FOX_X + FOX_WIDTH / 2)) / Math.max(1, speed),
+      (x - (FOX_X + FOX_WIDTH / 2 + aimOffset)) / Math.max(1, speed),
     )
     hazards = [
       ...hazards,
@@ -723,7 +759,7 @@ export const step = (prev: World, dt: number, input: InputState): World => {
       },
     ]
     nextId += 1
-    nextHazardAt += Math.max(1100, speed * (2.8 + rng() * 1.6))
+    nextHazardAt += Math.max(1600, speed * (3.4 + rng() * 1.8))
   }
 
   let phase: Phase = prev.phase

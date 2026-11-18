@@ -49,6 +49,10 @@ export const StartScreen = ({
             <span className={styles.controlLabel}>Duck</span>
           </div>
           <div className={styles.control}>
+            <span className={styles.key}>Shift</span>
+            <span className={styles.controlLabel}>Dash</span>
+          </div>
+          <div className={styles.control}>
             <span className={styles.key}>Tap</span>
             <span className={styles.controlLabel}>Jump</span>
           </div>
